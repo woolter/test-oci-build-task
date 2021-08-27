@@ -1,0 +1,45 @@
+---
+resources:
+- name: multi-arch-repo
+  type: git
+  icon: github
+  source:
+    uri: https://github.com/woolter/test-oci-build-task.git
+    branch: main
+
+# - name: multi-arch-image
+#   type: registry-image
+#   icon: docker
+#   source:
+#     repository: <<repository-name>>/multi-arch-image
+#     username: <<username>>
+#     password: <<password>>
+
+jobs:
+- name: build-and-push
+  plan:
+  - get: multi-arch-repo
+  - task: build-task-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: concourse/oci-build-task
+      inputs:
+      - name: multi-arch-repo
+      outputs:
+      - name: image
+      params:
+        CONTEXT: multi-arch-repo
+        # IMAGE_PLATFORM: linux/arm/v6
+        # IMAGE_PLATFORM: linux/arm/v7
+        # IMAGE_PLATFORM: linux/arm64
+        # IMAGE_PLATFORM: linux/amd64
+      run:
+        path: build
+  # - put: multi-arch-image
+  #   params:
+  #     image: image/image.tar
+  #     version: 1.0.2
